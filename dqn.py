@@ -12,7 +12,7 @@ def target_loss(params, s, y, a):
 	y : jax.numpy array of targets
 	a : jax.numpy array of chosen actions.
 	'''
-	q = batch_forward(params, s)[jnp.arange(s.shape[0]), a]
+	q = mlp.batch_forward(params, s)[jnp.arange(s.shape[0]), a]
 	return jnp.mean((y - q) ** 2)
 
 # apply jax.grad to get the gradient function
