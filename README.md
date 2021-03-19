@@ -20,6 +20,6 @@ TODO:
 * other models e.g. CNN.
 
 Example: train DQN on CartPole from Open-AI gym:
-'''
+```
 python3 dqn.py -gamma 0.97 -episodes 750 
-'''
+```
