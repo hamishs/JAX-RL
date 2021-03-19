@@ -8,6 +8,7 @@ Main libraries used:
 
 Algorithms:
 * Deep Q-Network (DQN)
+* Double Deep Q-Network (DDQN)
 
 Policies:
 * Epsilon-greedy

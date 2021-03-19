@@ -8,6 +8,7 @@ from models import mlp
 from utils import Transition, ExperienceReplay
 
 class DQNAgent:
+	''' A Deep Q-Network agent.'''
 
 	def __init__(self, buffer_size, key, n_states, n_actions, model, policy, gamma, lr):
 		'''
@@ -75,6 +76,31 @@ class DQNAgent:
 	def update_target(self):
 		self.target_params = hk.data_structures.to_immutable_dict(self.params)
 
+class DDQNAgent(DQNAgent):
+	''' A Double-DQN agent (https://arxiv.org/pdf/1509.06461.pdf).'''
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+	
+	def train(self, transition, batch_size, key = None):
+
+		key, subkey = jax.random.split(key) if key is not None else None, None
+
+		self.buffer.update(transition)
+
+		if len(self.buffer) < batch_size:
+			return self.params
+
+		s, a, r, d, s_next = self.buffer.sample(batch_size) 
+
+		q_actions = jnp.argmax(self.q_forward(self.params, subkey, s_next), axis = -1)
+		y = r + (1 - d) * self.gamma * self.q_forward(self.target_params, subkey, s_next)[jnp.arange(s_next.shape[0]), q_actions]
+		
+		# update parameters
+		gradients = self.q_backward(self.params, subkey, s, y, a)
+		updates, self.opt_state = self.opt_update(gradients, self.opt_state, self.params)
+		self.params = optax.apply_updates(self.params, updates)
+
 
 if __name__ == '__main__':
 
@@ -86,6 +112,7 @@ if __name__ == '__main__':
 	import matplotlib.pyplot as plt 
 
 	parser = argparse.ArgumentParser(description = 'Run DQN on CartPole-v0')
+	parser.add_argument('-agent', type = str, default = 'dqn')
 	parser.add_argument('-eps_min', type = float, default = 0.01)
 	parser.add_argument('-eps_max', type = float, default = 0.15)
 	parser.add_argument('-eps_decay', type = float, default = 1e-5)
@@ -97,6 +124,7 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
+	Agent = DDQNAgent if args.agent == 'ddqn' else DQNAgent
 	epsilon_min = args.eps_min
 	epsilon_max = args.eps_max
 	epsilon_decay = args.eps_decay
@@ -111,7 +139,7 @@ if __name__ == '__main__':
 	key = jax.random.PRNGKey(0)
 	policy = EpsilonGreedy(lambda t: epsilon_min + epsilon_max * jnp.exp(-t * epsilon_decay))
 	model = mlp.create_mlp([32, 32, 2])
-	agent = DQNAgent(buffer_size, key, 4, 2, model, policy, gamma, lr)
+	agent = Agent(buffer_size, key, 4, 2, model, policy, gamma, lr)
 
 	ep_rewards = []
 	for episode in range(episodes):
