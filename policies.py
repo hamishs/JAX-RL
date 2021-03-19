@@ -20,7 +20,7 @@ class EpsilonGreedy:
 		if exploration and (jax.random.uniform(key, shape = (1,))[0] > 1 - eps):
 			return int(jax.random.randint(key, shape = (1,), minval = 0, maxval = n_actions))
 		else:
-			return int(jnp.argmax(forward(s)))
+			return int(jnp.argmax(forward(state)))
 
 class BoltzmannPolicy:
 	''' Exploration with a Boltzmann distribution over
