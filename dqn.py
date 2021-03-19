@@ -81,17 +81,40 @@ if __name__ == '__main__':
 	# implements the DQN agent on CartPole-v0.
 
 	import gym
+	import argparse
 	from policies import EpsilonGreedy
+	import matplotlib.pyplot as plt 
+
+	parser = argparse.ArgumentParser(description = 'Run DQN on CartPole-v0')
+	parser.add_argument('-eps_min', type = float, default = 0.01)
+	parser.add_argument('-eps_max', type = float, default = 0.15)
+	parser.add_argument('-eps_decay', type = float, default = 1e-5)
+	parser.add_argument('-buffer_size', type = int, default = 5000)
+	parser.add_argument('-gamma', type = float, default = 0.97)
+	parser.add_argument('-lr', type = float, default = 1e-3)
+	parser.add_argument('-episodes', type = int, default = 1500)
+	parser.add_argument('-batch_size', type = int, default = 32)
+
+	args = parser.parse_args()
+
+	epsilon_min = args.eps_min
+	epsilon_max = args.eps_max
+	epsilon_decay = args.eps_decay
+	buffer_size = args.buffer_size
+	gamma = args.gamma
+	lr = args.lr
+	episodes = args.episodes
+	batch_size = args.batch_size
 
 	env = gym.make('CartPole-v0')
 
 	key = jax.random.PRNGKey(0)
-	policy = EpsilonGreedy(lambda t: 0.01 + 0.15 * jnp.exp(-t / 10000))
+	policy = EpsilonGreedy(lambda t: epsilon_min + epsilon_max * jnp.exp(-t * epsilon_decay))
 	model = mlp.create_mlp([32, 32, 2])
-	agent = DQNAgent(5000, key, 4, 2, model, policy, 0.97, 1e-3)
+	agent = DQNAgent(buffer_size, key, 4, 2, model, policy, gamma, lr)
 
 	ep_rewards = []
-	for episode in range(1500):
+	for episode in range(episodes):
 
 		s = env.reset()
 		d = False
@@ -106,16 +129,18 @@ if __name__ == '__main__':
 			ep_reward += r
 			transition = Transition(s = s, a = a, r = r, d = d, s_next = s_next)
 
-			agent.train(transition, 32) # key = None as model is not random
+			agent.train(transition, batch_size) # key = None as model is not random
 
 			s = s_next
 
+		ep_rewards.append(ep_reward)
+
 		if episode % 50 == 0:
 			agent.update_target()
+			print('Episode {} Mean reward {}'.format(episode, np.mean(ep_rewards[-50:])))
 
-		ep_rewards.append(ep_reward)
-		print(ep_reward)
-
-
-		
-		
+	plt.plot(ep_rewards)
+	plt.xlabel('Episode')
+	plt.ylabel('Reward')
+	plt.title('Episodic reward for DQN on CartPole-v0.')
+	plt.show()
