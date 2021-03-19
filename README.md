@@ -1,10 +1,10 @@
 # JAX-RL
-JAX implementations of various reinforcement learning algorithms.
+JAX implementations of various deep reinforcement learning algorithms.
 
 Main libraries used:
 * JAX - main framework
-* Haiku - neural networks in JAX
-* optax - gradient based optimisation in JAX
+* Haiku - neural networks
+* optax - gradient based optimisation
 
 Algorithms:
 * Deep Q-Network (DQN)
