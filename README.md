@@ -9,6 +9,7 @@ Main libraries used:
 Algorithms:
 * Deep Q-Network (DQN)
 * Double Deep Q-Network (DDQN)
+* Deep Deterministic Policy Gradient (DDPG)
 
 Policies:
 * Epsilon-greedy
@@ -16,9 +17,9 @@ Policies:
 
 TODO:
 * Prioritised experience replay
-* DDPG
 * Multi-agent DQN and DDPG
 * other models e.g. CNN.
+* Meta-gradient RL?
 
 Example: train DQN on CartPole from Open-AI gym:
 ```
