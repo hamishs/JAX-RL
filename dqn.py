@@ -1,10 +1,16 @@
+'''
+Deep Q-Network (DQN) as presented in
+Playing Atari with Deep Reinforcement Learning
+(Mnih et al., 2013)
+https://arxiv.org/abs/1312.5602
+'''
+
 import jax 
 import jax.numpy as jnp 
 import numpy as np
 import haiku as hk 
 import optax
 
-from models import mlp
 from utils import Transition, ExperienceReplay
 
 class DQNAgent:
@@ -54,24 +60,23 @@ class DQNAgent:
 
 		return self.policy(subkey, s, self.n_actions, forward, exploration)
 	
-	def train(self, transition, batch_size, key = None):
+	def train(self, transition, batch_size, key):
 
-		key, subkey = jax.random.split(key) if key is not None else None, None
+		key, subkey = jax.random.split(key)
 
 		self.buffer.update(transition)
 
-		if len(self.buffer) < batch_size:
-			return self.params
+		if len(self.buffer) >= batch_size:
 
-		s, a, r, d, s_next = self.buffer.sample(batch_size) 
+			s, a, r, d, s_next = self.buffer.sample(batch_size) 
 
-		q_next = self.q_forward(self.target_params, subkey, s_next)
-		y = r + (1 - d) * self.gamma * jnp.max(q_next, axis = -1)
-		
-		# update parameters
-		gradients = self.q_backward(self.params, subkey, s, y, a)
-		updates, self.opt_state = self.opt_update(gradients, self.opt_state, self.params)
-		self.params = optax.apply_updates(self.params, updates)
+			q_next = self.q_forward(self.target_params, subkey, s_next)
+			y = r + (1 - d) * self.gamma * jnp.max(q_next, axis = -1)
+			
+			# update parameters
+			gradients = self.q_backward(self.params, subkey, s, y, a)
+			updates, self.opt_state = self.opt_update(gradients, self.opt_state, self.params)
+			self.params = optax.apply_updates(self.params, updates)
 	
 	def update_target(self):
 		self.target_params = hk.data_structures.to_immutable_dict(self.params)
@@ -107,10 +112,12 @@ if __name__ == '__main__':
 	# implements the DQN agent on CartPole-v0.
 
 	import gym
+	import matplotlib.pyplot as plt
 	import argparse
-	from policies import EpsilonGreedy
-	import matplotlib.pyplot as plt 
 
+	from policies import EpsilonGreedy
+	from models import mlp
+	 
 	parser = argparse.ArgumentParser(description = 'Run DQN on CartPole-v0')
 	parser.add_argument('-agent', type = str, default = 'dqn')
 	parser.add_argument('-eps_min', type = float, default = 0.01)
@@ -170,5 +177,5 @@ if __name__ == '__main__':
 	plt.plot(ep_rewards)
 	plt.xlabel('Episode')
 	plt.ylabel('Reward')
-	plt.title('Episodic reward for DQN on CartPole-v0.')
+	plt.title('Episodic reward for {} on CartPole-v0.'.format(args.agent.upper()))
 	plt.show()
