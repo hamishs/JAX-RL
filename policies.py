@@ -35,16 +35,19 @@ class BoltzmannPolicy:
 		self.t = 0 # step counter
 
 	def __call__(self, key, state, n_actions, forward, exploration = True):
+		'''
+		key : jax.random.PRNGKey
+		state : current state as a jnp array
+		n_actions : int - dimensionality of action space
+		forward : function taking state to action preferences
+		exploration : bool - wether to include exploration.
+		'''
 
 		self.t += 1
-
 		T = self.T(self.t) if callable(self.T) else self.T
-
-		prefs = forward(state)
+		prefs = jax.nn.softmax(forward(state))
 		
 		if exploration:
-			prefs = jnp.exp(prefs / T)
-			prefs /= prefs.sum()
 			return int(jax.random.choice(key, n_actions, p = prefs))
 		else:
 			return int(jnp.argmax(prefs))
