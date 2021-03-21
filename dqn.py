@@ -3,15 +3,20 @@ Deep Q-Network (DQN) as presented in
 Playing Atari with Deep Reinforcement Learning
 (Mnih et al., 2013)
 https://arxiv.org/abs/1312.5602
+
+Double DQN (DDQN) as presented in
+Deep Reinforcement Learning with Double Q-learning
+(van Hasselt et al., 2015)
+https://arxiv.org/abs/1509.06461
 '''
 
 import jax 
 import jax.numpy as jnp 
 import numpy as np
-import haiku as hk 
+import haiku as hk
 import optax
 
-from utils import Transition, ExperienceReplay
+from utils import ExperienceReplay, Transition
 
 class DQNAgent:
 	''' A Deep Q-Network agent.'''
@@ -164,7 +169,7 @@ if __name__ == '__main__':
 			ep_reward += r
 			transition = Transition(s = s, a = a, r = r, d = d, s_next = s_next)
 
-			agent.train(transition, batch_size) # key = None as model is not random
+			agent.train(transition, batch_size, subkey)
 
 			s = s_next
 
