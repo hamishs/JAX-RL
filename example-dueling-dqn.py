@@ -60,7 +60,7 @@ def deuling_architecture(s):
 	v = V(x) # (batch, 1)
 
 	# compute Q
-	return v + v - v.mean(-1, keepdims = True)
+	return v + a - a.mean(-1, keepdims = True)
 
 model = hk.transform(deuling_architecture)
 
