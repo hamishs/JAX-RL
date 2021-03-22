@@ -83,8 +83,19 @@ class DQNAgent:
 			updates, self.opt_state = self.opt_update(gradients, self.opt_state, self.params)
 			self.params = optax.apply_updates(self.params, updates)
 	
-	def update_target(self):
-		self.target_params = hk.data_structures.to_immutable_dict(self.params)
+	def update_target(self, soft = False, tau  = 0.5):
+		''' Updates the target network with parameters from the Q-network.
+		soft : bool = False. Wether to perfrom a soft update
+			(keep a percent of the target network parameters)
+		tau : float = 0.5. If soft = True then the percentage of target network parameters to keep.
+		'''
+		if soft:
+			self.target_params = jax.tree_util.tree_multimap(
+				lambda x, y: tau * x + (1 - tau) * y,
+				self.target_params,
+				self.params)
+		else:
+			self.target_params = hk.data_structures.to_immutable_dict(self.params)
 
 class DDQNAgent(DQNAgent):
 	''' A Double-DQN agent (https://arxiv.org/pdf/1509.06461.pdf).'''
