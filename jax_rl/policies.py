@@ -1,6 +1,6 @@
 import jax 
 import jax.numpy as jnp 
-import numpy as np 
+import numpy as np
 
 class EpsilonGreedy:
 	''' Greedy/random policy with probability epsilon/1-epsilon.'''

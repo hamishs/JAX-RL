@@ -15,7 +15,7 @@ def create_mlp(hidden, activation = jax.nn.relu):
 		mlp = hk.nets.MLP(hidden, activation = jax.nn.relu)
 		return mlp(s)
 
-	return hk.transform(model)
+	return hk.without_apply_rng(hk.transform(model))
 
 if __name__ == '__main__':
 
