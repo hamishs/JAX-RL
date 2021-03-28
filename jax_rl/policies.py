@@ -70,3 +70,8 @@ class BoltzmannPolicy:
 			return int(jax.random.choice(key, n_actions, p = prefs))
 		else:
 			return int(jnp.argmax(prefs))
+
+if __name__ == '__main__':
+
+	eps = EpsilonGreedy(0.1)
+	boltz = BoltzmannPolicy(1.0)
