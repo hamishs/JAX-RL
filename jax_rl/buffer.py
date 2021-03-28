@@ -3,6 +3,7 @@ import jax.numpy as jnp
 import numpy as np 
 import random
 from abc import ABC, abstractmethod
+from collections import deque
 
 from utils import Transition
 
@@ -109,3 +110,37 @@ class TrajectoryBuffer(Buffer):
 		pi = jnp.array(self.probs)
 		advs = jnp.array(self.advs)
 		return s, a, r, d, s_next, pi, advs, self.tds
+
+class EpisodicBuffer(Buffer):
+	'''Buffer to store full episodes at a time.'''
+
+	def __init__(self, buffer_size, max_len = 50):
+		super(EpisodicBuffer, self).__init__(buffer_size)
+		self.max_len = max_len
+		
+	def reset(self):
+		self.buffer = deque(maxlen = self.buffer_size)
+
+	def __len__(self):
+		return len(self.buffer)
+
+	def start_episode(self):
+		self.buffer.append([])
+
+	def update(self, s, a, r, d):
+		n = len(self.buffer) - 1
+		if len(self.buffer[n]) < self.max_len:
+			self.buffer[n].append([s, a, r, d])
+
+	def sample(self):
+		idx = np.random.randint(0, len(self.buffer)-2) # exclude incomplete
+		batch = self.buffer[idx] 
+		return tuple(zip(*batch))
+
+if __name__ == '__main__':
+
+	_buffer = ExperienceReplay(100)
+	_buffer = TrajectoryBuffer(100)
+	_buffer = EpisodicBuffer(100)
+
+	print(len(_buffer))
