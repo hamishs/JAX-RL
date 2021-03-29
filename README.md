@@ -7,17 +7,18 @@ Main libraries used:
 * Optax - gradient based optimisation
 
 Algorithms:
-* Proximal Policy Optimization
+* Proximal Policy Optimization (PPO)
+* Deep Q-Network (DQN)
+* Double Deep Q-Network (DDQN)
 * Deep Recurrent Q-Network (DRQN)
+* Deep Deterministic Policy Gradient (DDPG)
 
 Policies:
 * Epsilon-greedy
 * Boltzmann
 
 TODO:
-* Add example for DRQN with haiku LSTM
-* Deep Q-Network (DQN)
-* Double Deep Q-Network (DDQN)
-* Deep Deterministic Policy Gradient (DDPG)
+* Fix imports and package
+* Other PPO based algorithms?
 * Prioritised experience replay
 * Multi-agent DQN and DDPG
