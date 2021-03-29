@@ -62,45 +62,6 @@ class PPO(BaseAgent):
 
 		return loss
 
-	def train_on_env(self, env, episodes, update_freq, train_steps, verbose = None):
-		''' Train on a given environment.
-		env : environment with methods reset and step e.g. gym CartPole-v1
-		episodes : number of training episodes
-		update_freq : frequency of training episodes
-		train_steps : number of gradient descent steps each training epsiode
-		verbose : wether to print current rewards. Given as int refering to print frequency.
-		'''
-		ep_rewards = []
-		losses = []
-
-		for episode in range(episodes):
-
-			s = env.reset()
-			d = False
-			ep_length = 0
-			ep_reward = 0.0
-			while not d:
-				a, pi = self.act(jnp.array([s]), return_prob = True)
-				s_next, r, d, _ = env.step(a)
-				ep_reward += r
-				self.update_buffer(s, a, r, d, s_next, pi)
-				s = s_next
-				ep_length += 1
-
-			# ep end
-			self.compute_advantages(ep_length)
-			ep_rewards.append(ep_reward)
-			if episode % update_freq == 0:
-				for _ in range(train_steps):
-					loss = self.train()
-					losses.append(loss)
-
-			if verbose is not None:
-				if episode % verbose == 0:
-					print('Episode {} Reward {:.4f} Loss {:.4f}'.format(episode,
-						np.mean(ep_rewards[-verbose:]),
-						np.mean(losses[-verbose*train_steps:])))
-
 	@partial(jax.jit, static_argnums = 0)
 	def loss_fn(self, policy_params, value_params, s, a, r, d, s_next, pi_old, advs, tds):
 		# actor loss
@@ -151,6 +112,47 @@ class PPO(BaseAgent):
 		opt_state = opt_init(params)
 		return opt_update, opt_state
 
+	def train_on_env(self, env, episodes, update_freq, train_steps, verbose = None):
+		''' Train on a given environment.
+		env : environment with methods reset and step e.g. gym CartPole-v1
+		episodes : number of training episodes
+		update_freq : frequency of training episodes
+		train_steps : number of gradient descent steps each training epsiode
+		verbose : wether to print current rewards. Given as int refering to print frequency.
+		'''
+		ep_rewards = []
+		losses = []
+
+		for episode in range(episodes):
+
+			s = env.reset()
+			d = False
+			ep_length = 0
+			ep_reward = 0.0
+			while not d:
+				a, pi = self.act(jnp.array([s]), return_prob = True)
+				s_next, r, d, _ = env.step(a)
+				ep_reward += r
+				self.update_buffer(s, a, r, d, s_next, pi)
+				s = s_next
+				ep_length += 1
+
+			# ep end
+			self.compute_advantages(ep_length)
+			ep_rewards.append(ep_reward)
+			if episode % update_freq == 0:
+				for _ in range(train_steps):
+					loss = self.train()
+					losses.append(loss)
+
+			if verbose is not None:
+				if episode % verbose == 0:
+					print('Episode {} Reward {:.4f} Loss {:.4f}'.format(episode,
+						np.mean(ep_rewards[-verbose:]),
+						np.mean(losses[-verbose*train_steps:])))
+
+		return ep_rewards, losses
+
 
 if __name__ == '__main__':
 
@@ -168,5 +170,5 @@ if __name__ == '__main__':
 	value = hk.without_apply_rng(hk.transform(forward))
 
 	ppo = PPO(0, 4, 2, 0.99, 0.95, 0.2, 0.9, 0.01, 400, policy, value, 1e-2, 1e-2)
-	ppo.train_on_env(env, 500, 1, 3, verbose = 10)
+	ep_rewards, losses = ppo.train_on_env(env, 500, 1, 3, verbose = 10)
 

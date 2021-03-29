@@ -131,6 +131,8 @@ class DRQN(BaseAgent):
 						np.mean(ep_rewards[-verbose:]),
 						np.mean(losses[-verbose:])))
 
+		return ep_rewards, losses
+
 
 
 if __name__ == '__main__':
@@ -174,5 +176,5 @@ if __name__ == '__main__':
 	policy = EpsilonGreedy(0.1)
 
 	drqn = DRQN(0, 4, 2, 0.99, 1000, 200, policy, model, init_state, 1e-5)
-	drqn.train_on_env(env, 500, 1, verbose = 10)
+	ep_rewards, losses = drqn.train_on_env(env, 500, 1, verbose = 10)
 
