@@ -170,16 +170,3 @@ if __name__ == '__main__':
 	ppo = PPO(0, 4, 2, 0.99, 0.95, 0.2, 0.9, 0.01, 400, policy, value, 1e-2, 1e-2)
 	ppo.train_on_env(env, 500, 1, 3, verbose = 10)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
