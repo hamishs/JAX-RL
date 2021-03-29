@@ -82,7 +82,7 @@ class DQN(BaseAgent):
 		''' Update the buffer with a transition.'''
 		self.buffer.update(transition)
 
-	def train_on_env(self, env, episodes, batch_size, verbose = None):
+	def train_on_env(self, env, episodes, batch_size, target_freq, verbose = None):
 		''' Train on a given environment.
 		env : environment with methods reset and step e.g. gym CartPole-v1
 		episodes : number of training episodes
@@ -108,6 +108,9 @@ class DQN(BaseAgent):
 			# ep end
 			ep_rewards.append(ep_reward)
 
+			if episode % target_freq == 0:
+				self.update_target()
+
 			if verbose is not None:
 				if episode % verbose == 0:
 					print('Episode {} Reward {:.4f} Loss {:.4f}'.format(episode,
@@ -116,6 +119,24 @@ class DQN(BaseAgent):
 
 		return ep_rewards, losses
 
+class DDQN(DQN):
+	''' DQN with double Q-learning. Overwrites the loss function with the DDQN target.'''
+
+	def __init__(self, *args):
+		super(DDQN, self).__init__(*args)
+
+	@partial(jax.jit, static_argnums = 0)
+	def loss_fn(self, params, target_params, s, a, r, d, s_next):
+		# td targets
+		a_targ = jnp.argmax(jax.lax.stop_gradient(self.q_network(params, s_next)), axis = -1)
+		q_targ = self.q_network(target_params, s_next)[jnp.arange(a_targ.shape[0]), a_targ]
+		y = r + self.gamma * q_targ * (1.0 - d)
+
+		# q-values
+		q_values = self.q_network(params, s)
+		q_values = q_values[jnp.arange(a.shape[0]), a]
+
+		return jnp.square((q_values - y)).mean()
 
 if __name__ == '__main__':
 
@@ -132,8 +153,8 @@ if __name__ == '__main__':
 
 	policy = EpsilonGreedy(0.1)
 
-	drqn = DQN(0, 4, 2, 0.99, 1000, policy, model, 1e-3)
-	ep_rewards, losses = drqn.train_on_env(env, 500, 32, verbose = 10)
+	drqn = DDQN(0, 4, 2, 0.99, 1000, policy, model, 1e-3)
+	ep_rewards, losses = drqn.train_on_env(env, 500, 32, 50, verbose = 10)
 
 	import matplotlib.pyplot as plt 
 	plt.plot(ep_rewards)
