@@ -6,8 +6,7 @@ JAX implementations of various deep reinforcement learning algorithms.
 * Haiku - neural networks
 * Optax - gradient based optimisation
 
-**Algorithms:**
-| Title | Paper |
+| Algorithms implemented | Paper |
 | --- | --- |
 | Proximal Policy Optimization (PPO) | https://arxiv.org/abs/1707.06347 |
 | Deep Q-Network (DQN) | https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf |
