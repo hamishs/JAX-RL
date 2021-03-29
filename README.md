@@ -7,11 +7,11 @@ JAX implementations of various deep reinforcement learning algorithms.
 * Optax - gradient based optimisation
 
 **Algorithms:**
-Proximal Policy Optimization (PPO) | 1
-Deep Q-Network (DQN) | 1
-Double Deep Q-Network (DDQN) | 1
-Deep Recurrent Q-Network (DRQN) | 1
-Deep Deterministic Policy Gradient (DDPG) | 1
+| Proximal Policy Optimization (PPO) | 1 |
+| Deep Q-Network (DQN) | 1 |
+| Double Deep Q-Network (DDQN) | 1 |
+| Deep Recurrent Q-Network (DRQN) | 1 |
+| Deep Deterministic Policy Gradient (DDPG) | 1 |
 
 **Policies:**
 * Epsilon-greedy
