@@ -26,16 +26,16 @@ def lstm_initial_state(units, batch_size = None):
 
 class GaussianNoise:
 
-		def __init__(self, mean = 0.0, sd = 1.0):
+	def __init__(self, mean = 0.0, sd = 1.0):
 
-			self.mean = mean
-			self.sd = sd
-			self.t = 0
+		self.mean = mean
+		self.sd = sd
+		self.t = 0
 
-		def __call__(self, key):
-			mu = self.mean(self.t) if callable(self.mean) else self.mean
-			sigma = self.sd(self.t) if callable(self.sd) else self.sd 
+	def __call__(self, key):
+		mu = self.mean(self.t) if callable(self.mean) else self.mean
+		sigma = self.sd(self.t) if callable(self.sd) else self.sd 
 
-			self.t += 1
+		self.t += 1
 
-			return (jax.random.normal(key) + mu) * sigma
+		return (jax.random.normal(key) + mu) * sigma
