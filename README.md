@@ -14,6 +14,12 @@ JAX implementations of various deep reinforcement learning algorithms.
 | Deep Recurrent Q-Network (DRQN) | https://arxiv.org/abs/1507.06527 |
 | Deep Deterministic Policy Gradient (DDPG) | https://arxiv.org/abs/1509.02971 |
 
+**Tabular algorithms:**
+* Q-learning
+* Double Q-learning
+* SARSA
+* Expected SARSA
+
 **Policies:**
 * Epsilon-greedy
 * Boltzmann
