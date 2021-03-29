@@ -25,12 +25,12 @@ class EpsilonGreedy(Policy):
 		self.epsilon = epsilon 
 		self.t = 0 # step counter
 
-	def call(self, key, state, n_actions, forward, exploration = True):
+	def call(self, key, n_actions, q_values, exploration = True):
 		'''
 		key : jax.random.PRNGKey.
 		state : jnp.array (1, n_states) - current state.
 		n_actions : int - number of actions.
-		forward : callable - function returning action preferences given state.
+		q_values : (n_actions) - estimated q-values for the current state.
 		exploration : bool = True - wether to allow exploration or to be greedy.
 		'''
 
@@ -40,7 +40,7 @@ class EpsilonGreedy(Policy):
 		if exploration and (jax.random.uniform(key, shape = (1,))[0] > 1 - eps):
 			return int(jax.random.randint(key, shape = (1,), minval = 0, maxval = n_actions))
 		else:
-			return int(jnp.argmax(forward(state)))
+			return int(jnp.argmax(q_values))
 
 class BoltzmannPolicy:
 	''' Exploration with a Boltzmann distribution over the Q-values with temperature.'''
@@ -52,24 +52,23 @@ class BoltzmannPolicy:
 		self.T = T 
 		self.t = 0 # step counter
 
-	def __call__(self, key, state, n_actions, forward, exploration = True):
+	def __call__(self, key, n_actions, q_values, exploration = True):
 		'''
 		key : jax.random.PRNGKey.
 		state : jnp.array (1, n_states) - current state.
 		n_actions : int - number of actions.
-		forward : callable - function returning action preferences given state.
+		q_values : (n_actions) - estimated q-values for the current state.
 		exploration : bool = True - wether to allow exploration or to be greedy.
 		'''
 		self.t += 1
 		T = self.T(self.t) if callable(self.T) else self.T
-		prefs = forward(state)
 
 		if exploration:
-			prefs = jnp.exp(prefs / T)
+			prefs = jnp.exp(q_values / T)
 			prefs /= prefs.sum()
 			return int(jax.random.choice(key, n_actions, p = prefs))
 		else:
-			return int(jnp.argmax(prefs))
+			return int(jnp.argmax(q_values))
 
 if __name__ == '__main__':
 

@@ -1,6 +1,8 @@
 import jax
 import jax.numpy as jnp 
 import numpy as np
+import haiku as hk 
+
 from typing import NamedTuple
 
 class Transition(NamedTuple):
@@ -12,6 +14,15 @@ class Transition(NamedTuple):
 
 def entropy(dist, axis = -1):
 	return -(jnp.log(dist) * dist).sum(axis = axis)
+
+def lstm_initial_state(units, batch_size = None):
+	''' Computes the intial hidden state of an LSTM cell using
+	given unit size and batch size.'''
+	state = hk.LSTMState(hidden=jnp.zeros([units]), cell=jnp.zeros([units]))
+	if batch_size is not None:
+		broadcast = lambda x : jnp.broadcast_to(x, (batch_size,) + x.shape)
+		state = jax.tree_map(broadcast, state)
+	return state
 
 class GaussianNoise:
 
