@@ -9,11 +9,11 @@ JAX implementations of various deep reinforcement learning algorithms.
 **Algorithms:**
 | Title | Paper |
 | --- | --- |
-| Proximal Policy Optimization (PPO) | 1 |
-| Deep Q-Network (DQN) | 1 |
-| Double Deep Q-Network (DDQN) | 1 |
-| Deep Recurrent Q-Network (DRQN) | 1 |
-| Deep Deterministic Policy Gradient (DDPG) | 1 |
+| Proximal Policy Optimization (PPO) | https://arxiv.org/abs/1707.06347 |
+| Deep Q-Network (DQN) | https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf |
+| Double Deep Q-Network (DDQN) | https://arxiv.org/abs/1509.06461 |
+| Deep Recurrent Q-Network (DRQN) | https://arxiv.org/abs/1507.06527 |
+| Deep Deterministic Policy Gradient (DDPG) | https://arxiv.org/abs/1509.02971 |
 
 **Policies:**
 * Epsilon-greedy
