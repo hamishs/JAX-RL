@@ -42,17 +42,18 @@ class EpsilonGreedy(Policy):
 		else:
 			return int(jnp.argmax(q_values))
 
-class BoltzmannPolicy:
+class BoltzmannPolicy(Policy):
 	''' Exploration with a Boltzmann distribution over the Q-values with temperature.'''
 
 	def __init__(self, T):
 		'''
 		T : float or callable giving temperature parameter.
 		'''
+		super(BoltzmannPolicy, self).__init__()
 		self.T = T 
 		self.t = 0 # step counter
 
-	def __call__(self, key, n_actions, q_values, exploration = True):
+	def call(self, key, n_actions, q_values, exploration = True):
 		'''
 		key : jax.random.PRNGKey.
 		state : jnp.array (1, n_states) - current state.
