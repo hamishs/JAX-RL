@@ -6,9 +6,9 @@ import optax
 
 from functools import partial
 
-from base_agent import BaseAgent 
-from buffer import TrajectoryBuffer
-from utils import entropy
+from jax_rl.algorithms import BaseAgent 
+from jax_rl.buffer import TrajectoryBuffer
+from jax_rl.utils import entropy
 
 class PPO(BaseAgent):
 	''' Proximal Policy Optimisation for discrete action spaces.'''

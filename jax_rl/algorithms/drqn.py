@@ -6,8 +6,8 @@ import optax
 
 from functools import partial
 
-from base_agent import BaseAgent
-from buffer import EpisodicBuffer
+from jax_rl.algorithms import BaseAgent
+from jax_rl.buffer import EpisodicBuffer
 
 class DRQN(BaseAgent):
 	''' Deep Recurrent Q-network using double Q-learning.'''

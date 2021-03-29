@@ -6,9 +6,9 @@ import optax
 
 from functools import partial
 
-from base_agent import BaseAgent
-from buffer import ExperienceReplay
-from utils import Transition
+from jax_rl.algorithms import BaseAgent
+from jax_rl.buffer import ExperienceReplay
+from jax_rl.utils import Transition
 
 class DQN(BaseAgent):
 	''' Deep Q-network'''

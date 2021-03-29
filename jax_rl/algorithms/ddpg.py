@@ -6,9 +6,9 @@ import optax
 
 from functools import partial
 
-from utils import Transition
-from base_agent import BaseAgent 
-from buffer import ExperienceReplay
+from jax_rl.utils import Transition
+from jax_rl.buffer import ExperienceReplay
+from jax_rl.algorithms import BaseAgent 
 
 class DDPG(BaseAgent):
 	''' Deep Deterministic Policy Gradient for discrete action spaces.'''
