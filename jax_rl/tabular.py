@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np 
 import haiku as hk
+from abc import abstractmethod
 
 from jax_rl.algorithms import BaseAgent
 
@@ -20,13 +21,12 @@ class TabularAlgorithm(BaseAgent):
 		super(TabularAlgorithm, self).__init__(key, n_states, n_actions, gamma)
 
 		self.policy = policy
-		self.target_policy = target_policy
 		self.lr = lr
 
 		# initialise q-values
 		self.q = jnp.zeros((n_states, n_actions))
 
-	def act(self, s exploration = True):
+	def act(self, s, exploration = True):
 		return self.policy(next(self.prng), self.n_actions, self.q[s,:], exploration)
 
 	def train_on_env(self, env, steps):
@@ -58,14 +58,14 @@ class QLearning(TabularAlgorithm):
 class DoubleQLearning(TabularAlgorithm):
 	''' Double Q-learning (Hasselt et al.)'''
 	def __init__(self, key, n_states, n_actions, gamma, policy, lr):
-		super(QLearning, self).__init__(key, n_states, n_actions, gamma, policy, lr)
+		super(DoubleQLearning, self).__init__(key, n_states, n_actions, gamma, policy, lr)
 		self.q2 = self.q.copy()
 
 	@property
 	def q_values(self):
 		return 0.5 * (self.q + self.q2)
 	
-	def act(self, s exploration = True):
+	def act(self, s, exploration = True):
 		return self.policy(next(self.prng), self.n_actions, self.q_values[s,:], exploration)
 
 	def train(self, s, a, r, d, s_next):
@@ -84,7 +84,7 @@ class DoubleQLearning(TabularAlgorithm):
 class SARSA(TabularAlgorithm):
 	''' State-Action-Reward-State-Action.'''
 	def __init__(self, key, n_states, n_actions, gamma, policy, lr):
-		super(QLearning, self).__init__(key, n_states, n_actions, gamma, policy, lr)
+		super(SARSA, self).__init__(key, n_states, n_actions, gamma, policy, lr)
 
 	def q_targets(self, s):
 		a = self.act(s, exploration = True)
@@ -95,7 +95,7 @@ class ExpectedSARSA(TabularAlgorithm):
 	to have a return_distribution keyword to return to return the distribution
 	over the actions.'''
 	def __init__(self, key, n_states, n_actions, gamma, policy, lr):
-		super(QLearning, self).__init__(key, n_states, n_actions, gamma, policy, lr)
+		super(ExpectedSARSA, self).__init__(key, n_states, n_actions, gamma, policy, lr)
 
 	def q_targets(self, s):
 		a_dist = self.act(s, exploration = True, return_distribution = True)
