@@ -9,20 +9,40 @@ import haiku as hk
 import optax
 
 import jax_rl
-from jax_rl.algorithms import PPO
+from jax_rl.algorithms import DRQN
+from jax_rl.policies import EpsilonGreedy
+from jax_rl.utils import lstm_initial_state
 
 import gym
 env = gym.make('CartPole-v0')
 
-def forward(s):
-	mlp = hk.nets.MLP([16, 32, 2])
-	return jax.nn.softmax(mlp(s))
-policy = hk.without_apply_rng(hk.transform(forward))
+# Example LSTM network
+def forward(s, hidden = None):
+	'''
+	Apply the LSTM over the input sequence with given initial state.
+	s : (batch, seq_len, features)
+	hidden : LSTM state (h, c).
+	'''
 
-def forward(s):
-	mlp = hk.nets.MLP([16, 32, 1])
-	return mlp(s)
-value = hk.without_apply_rng(hk.transform(forward))
+	# extract features
+	mlp1 = hk.nets.MLP([16])
+	s = hk.BatchApply(mlp1)(s) # (batch, seq_len, hidden_features)
 
-ppo = PPO(0, 4, 2, 0.99, 0.95, 0.2, 0.9, 0.01, 400, policy, value, 1e-2, 1e-2)
-ep_rewards, losses = ppo.train_on_env(env, 20, 1, 3, verbose = 1)
+	# LSTM
+	lstm = hk.LSTM(32)
+	if hidden is None: hidden = lstm.initial_state(s.shape[0])
+	s, hidden = hk.dynamic_unroll(lstm, jnp.transpose(s, (1, 0, 2)), hidden)
+
+	# output fully connected
+	mlp2 = hk.nets.MLP([16, 1])
+	s = hk.BatchApply(mlp2)(jnp.transpose(s, (1, 0, 2)))
+
+	return s, hidden
+
+model = hk.without_apply_rng(hk.transform(forward))
+init_state = lambda batch_size: lstm_initial_state(32, batch_size = batch_size)
+
+policy = EpsilonGreedy(0.1)
+
+drqn = DRQN(0, 4, 2, 0.99, 1000, 200, policy, model, init_state, 1e-5)
+ep_rewards, losses = drqn.train_on_env(env, 500, 1, verbose = 10)

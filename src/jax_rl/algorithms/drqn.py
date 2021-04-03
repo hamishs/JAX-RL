@@ -12,7 +12,8 @@ from jax_rl.buffer import EpisodicBuffer
 class DRQN(BaseAgent):
 	''' Deep Recurrent Q-network using double Q-learning.'''
 
-	def __init__(self, key, n_states, n_actions, gamma, buffer_size, max_len, policy, model, init_state, lr):
+	def __init__(self, key, n_states, n_actions, gamma, buffer_size,
+		max_len, policy, model, init_state, lr):
 		'''
 		model must take sequential inputs and a hidden state.
 		init_state must provide the initial state for a given batch_size.
@@ -40,7 +41,7 @@ class DRQN(BaseAgent):
 		assert s.shape == (1, 1, self.n_states)
 		q_values, self.hidden_state = self.q_network(self.params, s, self.hidden_state)
 
-		return self.policy(next(self.prng), self.n_actions, q_values, exploration)
+		return self.policy(next(self.prng), q_values, exploration)
 
 	def train(self):
 		''' Train the agent on a single episode. Uses the double q-learning target.
@@ -132,49 +133,4 @@ class DRQN(BaseAgent):
 						np.mean(losses[-verbose:])))
 
 		return ep_rewards, losses
-
-
-
-if __name__ == '__main__':
-
-	from policies import EpsilonGreedy
-	from utils import lstm_initial_state
-
-	import gym
-	env = gym.make('CartPole-v0')
-
-	# Example LSTM network
-	def forward(s, hidden = None):
-		'''
-		Apply the LSTM over the input sequence with given initial state.
-		s : (batch, seq_len, features)
-		hidden : LSTM state (h, c).
-		'''
-
-		# extract features
-		mlp1 = hk.nets.MLP([16, 16])
-		s = hk.BatchApply(mlp1)(s) # (batch, seq_len, hidden_features)
-
-		# LSTM
-		lstm = hk.LSTM(32)
-		if hidden is None: hidden = lstm.initial_state(s.shape[0])
-		s, hidden = hk.dynamic_unroll(lstm, jnp.transpose(s, (1, 0, 2)), hidden)
-
-		# output fully connected
-		mlp2 = hk.nets.MLP([16, 1])
-		s = hk.BatchApply(mlp2)(jnp.transpose(s, (1, 0, 2)))
-
-		# s : (batch, seq_len, 1)
-		# hidden = (h, c)
-		# h : ()
-
-		return s, hidden
-
-	model = hk.without_apply_rng(hk.transform(forward))
-	init_state = lambda batch_size: lstm_initial_state(32, batch_size = batch_size)
-
-	policy = EpsilonGreedy(0.1)
-
-	drqn = DRQN(0, 4, 2, 0.99, 1000, 200, policy, model, init_state, 1e-5)
-	ep_rewards, losses = drqn.train_on_env(env, 500, 1, verbose = 10)
 

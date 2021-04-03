@@ -27,20 +27,31 @@ class TabularAlgorithm(BaseAgent):
 		self.q = jnp.zeros((n_states, n_actions))
 
 	def act(self, s, exploration = True):
-		return self.policy(next(self.prng), self.n_actions, self.q[s,:], exploration)
+		return self.policy(next(self.prng), self.q[s,:], exploration = exploration)
 
-	def train_on_env(self, env, steps):
+	def train_on_env(self, env, episodes, verbose = None):
 		'''Trains the q-targets on a given environment.'''
-		s = env.reset()
-		for _ in range(steps):
-			a = self.act(s, exploration = True)
-			s_next, r, d, _ = env.step(a)
-			self.train(s, a, r, d, s_next)
-			s = s_next
+		rewards = []
+		for epsiode in range(episodes):
+			s = env.reset()
+			d = False
+			ep_reward = 0.0
+			while not d:
+				a = self.act(s, exploration = True)
+				s_next, r, d, _ = env.step(a)
+				ep_reward += r
+				self.train(s, a, r, d, s_next)
+				s = s_next
+			rewards.append(ep_reward)
+
+			if verbose is not None:
+				print('Episode {} Reward {:.4f}'.format(epsiode, np.mean(rewards[-verbose:])))
+
+		return rewards
 
 	def train(self, s, a, r, d, s_next):
 		'''Update on a previous transition.'''
-		self.q[s,a] += self.lr * (r + self.gamma * self.q_targets(s_next) - self.q[s,a])
+		self.q = jax.ops.index_add(self.q, (s,a), self.lr * (r + self.gamma * self.q_targets(s_next) - self.q[s,a]))
 
 	@abstractmethod
 	def q_targets(self):
@@ -66,14 +77,14 @@ class DoubleQLearning(TabularAlgorithm):
 		return 0.5 * (self.q + self.q2)
 	
 	def act(self, s, exploration = True):
-		return self.policy(next(self.prng), self.n_actions, self.q_values[s,:], exploration)
+		return self.policy(next(self.prng), self.q_values[s,:], exploration = exploration)
 
 	def train(self, s, a, r, d, s_next):
 		'''Update on a previous transition.'''
 		if jax.random.uniform(next(self.prng)) > 0.5:
-			self.q[s,a] += self.lr * (r + self.gamma * self.q_targets(s_next, other = True) - self.q[s,a])
+			self.q = jax.ops.index_add(self.q, (s,a), self.lr * (r + self.gamma * self.q_targets(s_next, other = True) - self.q[s,a]))
 		else:
-			self.q2[s,a] += self.lr * (r + self.gamma * self.q_targets(s_next, other = False) - self.q2[s,a])
+			self.q2 = jax.ops.index_add(self.q2, (s,a), self.lr * (r + self.gamma * self.q_targets(s_next, other = False) - self.q2[s,a]))
 
 	def q_targets(self, s, other = False):
 		if other:
@@ -96,6 +107,10 @@ class ExpectedSARSA(TabularAlgorithm):
 	over the actions.'''
 	def __init__(self, key, n_states, n_actions, gamma, policy, lr):
 		super(ExpectedSARSA, self).__init__(key, n_states, n_actions, gamma, policy, lr)
+
+	def act(self, s, exploration = True, return_distribution = False):
+		return self.policy(next(self.prng), self.q[s,:], exploration = exploration,
+			return_distribution = return_distribution)
 
 	def q_targets(self, s):
 		a_dist = self.act(s, exploration = True, return_distribution = True)

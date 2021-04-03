@@ -40,7 +40,7 @@ class DQN(BaseAgent):
 		assert s.shape == (1, self.n_states)
 		q_values = self.q_network(self.params, s)
 
-		return self.policy(next(self.prng), self.n_actions, q_values, exploration)
+		return self.policy(next(self.prng), q_values, exploration)
 
 	def train(self, batch_size):
 		''' Train the agent on a single episode. Uses the double q-learning target.

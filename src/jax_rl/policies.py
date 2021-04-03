@@ -13,7 +13,7 @@ class Policy(ABC):
 		return self.call(*args, **kwargs)
 
 	@abstractmethod
-	def call(self, key, q_values, exploration = True, return_distibution = False):
+	def call(self, key, q_values, exploration = True, return_distribution = False):
 		pass
 
 class EpsilonGreedy(Policy):
@@ -25,7 +25,7 @@ class EpsilonGreedy(Policy):
 		self.epsilon = epsilon 
 		self.t = 0 # step counter
 
-	def call(self, key, q_values, exploration = True, return_distibution = False):
+	def call(self, key, q_values, exploration = True, return_distribution = False):
 		'''
 		key : jax.random.PRNGKey.
 		state : jnp.array (1, n_states) - current state.
@@ -34,14 +34,14 @@ class EpsilonGreedy(Policy):
 		exploration : bool = True - wether to allow exploration or to be greedy.
 		return distribution : bool = False - wether to return the distribution over actions.
 		'''
-		if return_distibution:
+		n_actions = q_values.shape[0]
+		if return_distribution:
 			dist = jnp.ones(n_actions,) * self.epsilon / n_actions
-			dist[jnp.argmax(q_values)] += 1 - self.epsilon
+			dist = jax.ops.index_add(dist, jnp.argmax(q_values), 1 - self.epsilon)
 			return dist
 		else:
 			self.t += 1
 			eps = self.epsilon(self.t) if callable(self.epsilon) else self.epsilon
-			n_actions = q_values.shape[0]
 			if exploration and (jax.random.uniform(key, shape = (1,))[0] > 1 - eps):
 				return int(jax.random.randint(key, shape = (1,), minval = 0, maxval = n_actions))
 			else:
@@ -58,7 +58,7 @@ class BoltzmannPolicy(Policy):
 		self.T = T 
 		self.t = 0 # step counter
 
-	def call(self, key, q_values, exploration = True, return_distibution = False):
+	def call(self, key, q_values, exploration = True, return_distribution = False):
 		'''
 		key : jax.random.PRNGKey.
 		state : jnp.array (1, n_states) - current state.
@@ -66,14 +66,14 @@ class BoltzmannPolicy(Policy):
 		exploration : bool = True - wether to allow exploration or to be greedy.
 		return distribution : bool = False - wether to return the distribution over actions.
 		'''
-		if return_distibution:
+		n_actions = q_values.shape[0]
+		T = self.T(self.t) if callable(self.T) else self.T
+		if return_distribution:
 			prefs = jnp.exp(q_values / T)
 			prefs /= prefs.sum()
 			return prefs
 		else:
 			self.t += 1
-			T = self.T(self.t) if callable(self.T) else self.T
-			n_actions = q_values.shape[0]
 			if exploration:
 				prefs = jnp.exp(q_values / T)
 				prefs /= prefs.sum()

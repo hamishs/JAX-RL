@@ -1,23 +1,30 @@
+'''
+Solve a simple grid world with tabular RL.
+'''
+
 import jax
 import jax.numpy as jnp
 import numpy as np 
+import matplotlib.pyplot as plt
 
 from jax_rl.tabular import QLearning, DoubleQLearning, SARSA, ExpectedSARSA
 from jax_rl.policies import EpsilonGreedy
 from jax_rl.environment import GridWorld
 
-# setup gridworld for testing
+# setup gridworld
 
 grid = np.array([
-	[0, 0, 0, 0, 0, 0, 0],
-	[0, 1, 1, 1, 1, 1, 0],
-	[0, 1, 0, 1, 1, 1, 0],
-	[0, 1, 1, 1, 0, 1, 0],
-	[0, 0, 0, 0, 0, 1, 0],
-	[0, 0, 0, 0, 0, 0, 0]])
+	[0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 1, 1, 1, 1, 1, 1, 1, 0],
+	[0, 1, 0, 1, 1, 1, 1, 1, 0],
+	[0, 1, 0, 1, 0, 1, 1, 1, 0],
+	[0, 1, 0, 1, 0, 1, 1, 1, 0],
+	[0, 1, 1, 1, 0, 1, 1, 1, 0],
+	[0, 0, 0, 0, 0, 0, 0, 1, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0 ,0]])
 
 start = (1, 2)
-end = (4, 5)
+end = (6, 7)
 wall_reward = -10.0
 step_reward = -0.1
 
@@ -41,17 +48,32 @@ class FlatWrapper:
 env = FlatWrapper(GridWorld(grid, start, end, wall_reward, step_reward),
 	grid.shape[0], grid.shape[1])
 
-# test algos
+# train each algorithm on the grid problem
 
 q_learning = QLearning(4, grid.size, 4, 0.99, EpsilonGreedy(0.1), 0.1)
-print(q_learning.train_on_env(env, 3, verbose = 1))
+q_rs = q_learning.train_on_env(env, 30, verbose = 5)
 
 double_q = DoubleQLearning(5, grid.size, 4, 0.99, EpsilonGreedy(0.1), 0.1)
-print(double_q.train_on_env(env, 3, verbose = 1))
+qd_rs = double_q.train_on_env(env, 30, verbose = 5)
 
 sarsa = SARSA(6, grid.size, 4, 0.99, EpsilonGreedy(0.1), 0.1)
-print(sarsa.train_on_env(env, 3, verbose = 1))
+s_rs = sarsa.train_on_env(env, 30, verbose = 5)
 
 expected_sarsa = ExpectedSARSA(7, grid.size, 4, 0.99, EpsilonGreedy(0.1), 0.1)
-print(expected_sarsa.train_on_env(env, 3, verbose = 1))
+es_rs = expected_sarsa.train_on_env(env, 30, verbose = 5)
+
+# plot results
+plt.plot(q_rs, label = 'Q-learning')
+plt.plot(qd_rs, label = 'Double Q-learning')
+plt.plot(s_rs, label = 'SARSA')
+plt.plot(es_rs, label = 'Expected SARSA')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
 
