@@ -137,26 +137,3 @@ class DDQN(DQN):
 		q_values = q_values[jnp.arange(a.shape[0]), a]
 
 		return jnp.square((q_values - y)).mean()
-
-if __name__ == '__main__':
-
-	from policies import EpsilonGreedy
-
-	import gym
-	env = gym.make('CartPole-v0')
-
-	def forward(s):
-		mlp = hk.nets.MLP([32, 32, 2])
-		return mlp(s)
-
-	model = hk.without_apply_rng(hk.transform(forward))
-
-	policy = EpsilonGreedy(0.1)
-
-	drqn = DDQN(0, 4, 2, 0.99, 1000, policy, model, 1e-3)
-	ep_rewards, losses = drqn.train_on_env(env, 500, 32, 50, verbose = 10)
-
-	import matplotlib.pyplot as plt 
-	plt.plot(ep_rewards)
-	plt.show()
-
