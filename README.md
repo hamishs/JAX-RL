@@ -1,12 +1,12 @@
 # JAX-RL
 JAX implementations of various deep reinforcement learning algorithms.
 
-Main libraries used:**
+Main libraries used:
 * JAX - main framework
 * Haiku - neural networks
 * Optax - gradient based optimisation
 
-## Algorithms implemented ##
+## Algorithms implemented
 | Algorithms | Paper |
 | --- | --- |
 | Proximal Policy Optimization (PPO) | https://arxiv.org/abs/1707.06347 |
@@ -15,13 +15,13 @@ Main libraries used:**
 | Deep Recurrent Q-Network (DRQN) | https://arxiv.org/abs/1507.06527 |
 | Deep Deterministic Policy Gradient (DDPG) | https://arxiv.org/abs/1509.02971 |
 
-### Tabular algorithms ###
+### Tabular algorithms
 * Q-learning
 * Double Q-learning
 * SARSA
 * Expected SARSA
 
-## TODO ##
+## TODO
 * More unit tests
 * Other PPO based algorithms?
 * Prioritised experience replay
