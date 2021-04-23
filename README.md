@@ -22,13 +22,11 @@ Main libraries used:
 * Expected SARSA
 
 ## TODO
-### v0
+### v0.1
 * More unit tests
-* environment
 * documentation
 
-### v1
+### future
 * Other PPO based algorithms?
 * Prioritised experience replay
 * Multi-agent
-* Environment

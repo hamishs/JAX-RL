@@ -45,7 +45,8 @@ class TabularAlgorithm(BaseAgent):
 			rewards.append(ep_reward)
 
 			if verbose is not None:
-				print('Episode {} Reward {:.4f}'.format(epsiode, np.mean(rewards[-verbose:])))
+				if episode % verbose:
+					print('Episode {} Reward {:.4f}'.format(epsiode, np.mean(rewards[-verbose:])))
 
 		return rewards
 

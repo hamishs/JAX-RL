@@ -17,6 +17,16 @@ class DRQN(BaseAgent):
 		'''
 		model must take sequential inputs and a hidden state.
 		init_state must provide the initial state for a given batch_size.
+		key : int for seeding
+		n_states : int - dimensionality of state space
+		n_actions : int - dimensionality of action space
+		gamma : float - discount rate
+		buffer_size : int - max number of episodes to store
+		max_len : int - max length of each episode to store
+		policy : jax_rl.policy.Policy
+		model : hk.transform - taking sequential inputs and hidden state
+		init_state : function to return initial hidden state given batch size
+		lr : float - learning rate
 		'''
 		super(DRQN, self).__init__(key, n_states, n_actions, gamma)
 
