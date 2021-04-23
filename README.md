@@ -21,12 +21,7 @@ Main libraries used:
 * SARSA
 * Expected SARSA
 
-## TODO
-### v0.1
-* More unit tests
-* documentation
-
-### future
-* Other PPO based algorithms?
-* Prioritised experience replay
-* Multi-agent
+## Installation
+```
+$ pip install git+https://github.com/hamishs/JAX-RL
+```
