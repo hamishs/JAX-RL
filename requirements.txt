@@ -1,6 +1,6 @@
 ##### Requirements for JAX-RL #####
-numpy~=1.19.5
-jax~=0.2.10
-dm-haiku @ git+https://github.com/deepmind/dm-haiku@7b48de1cf41113f58dc105b6e55fd0b5ec988ba6
-optax @ git+git://github.com/deepmind/optax.git@0ad95ab7eb3d48186a14bd8cd455455b3a78f1c7
-gym~=0.18.0
+numpy<1.24
+jax
+dm-haiku
+optax
+gym
